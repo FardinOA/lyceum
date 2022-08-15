@@ -8,7 +8,7 @@ const app = express();
 require("dotenv").config();
 app.use(
     cors({
-        origin: "https://lyceum-frontend-fardinoa.vercel.app/",
+        origin: "https://lyceum-frontend-fardinoa.vercel.app",
         credentials: true,
     })
 );
