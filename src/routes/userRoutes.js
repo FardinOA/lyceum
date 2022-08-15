@@ -62,7 +62,7 @@ router.post("/create-comment/:postId", isAuth, createComment);
 router.put("/delete-comment", isAuth, deleteComment);
 router.put("/edit-comment/:commentId", isAuth, editComment);
 router.put("/edit-post/:postId", isAuth, editPost);
-router.get("/get-all-post-byUser", getAllPostByUser);
+router.get("/get-all-post-byUser", isAuth, getAllPostByUser);
 router.get("/get-post/:postId", getPost);
 router.put("/like-post/:postId", isAuth, likeAPost);
 router.get("/get-all-post", isAuth, getAllPost);
