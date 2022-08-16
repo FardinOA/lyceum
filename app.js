@@ -9,6 +9,8 @@ require("dotenv").config();
 app.use(
     cors({
         origin: [
+            "https://lyceum-frontend-git-main-fardinoa.vercel.app",
+            "https://lyceum-frontend.vercel.app",
             "https://lyceum-frontend-fardinoa.vercel.app",
             "http://localhost:3000",
         ],
