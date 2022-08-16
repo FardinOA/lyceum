@@ -13,6 +13,7 @@ const cloudinary = require("cloudinary").v2;
 exports.registerUser = catchAssyncErrors(async (req, res, next) => {
     const otp = Math.floor(1000 + Math.random() * 9000);
     const otpExpires = Date.now() + 15 * 60 * 1000;
+
     const user = await User.create({ ...req.body, otp, otpExpires });
 
     if (!user) return next(new ErrorHandeler("Can't Register", 400));
