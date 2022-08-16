@@ -20,7 +20,7 @@ exports.registerUser = catchAssyncErrors(async (req, res, next) => {
         await sendEmail({
             email: user.email,
             subject: "Welcomme to the Lyceum",
-            message: `Welcome ${user.firstName}. Your OTP is ${user.otp}. Please visit http://localhost:3000/verification `,
+            message: `Welcome ${user.firstName}. Your OTP is ${user.otp}. Please visit https://lyceum-frontend.vercel.app/verification `,
         });
     } catch (err) {
         return next(new ErrorHandeler(err.message, 500));
