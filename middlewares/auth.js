@@ -4,8 +4,7 @@ const ErrorHandeler = require("../utils/errorHandeler");
 const catchAssyncErrors = require("./catchAssyncErrors");
 const isAuth = catchAssyncErrors(async (req, res, next) => {
     const { token } = req.cookies;
-    console.log("token", token);
-    console.log("req", req.cookies);
+
     if (!token) {
         return next(
             new ErrorHandeler("Please login to access this resource", 401)

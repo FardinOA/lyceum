@@ -20,7 +20,7 @@ app.use(
 
 // config
 
-require("dotenv").config({ path: "backend/.env" });
+require("dotenv").config();
 
 app.use(cookieParser());
 app.use(
