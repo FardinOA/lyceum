@@ -545,3 +545,22 @@ exports.likeAPost = catchAssyncErrors(async (req, res, next) => {
         post: success,
     });
 });
+
+exports.uploadProfileimage = catchAssyncErrors(async (req, res, next) => {
+    const myCloud = await cloudinary.uploader.upload(req.body.image, {
+        folder: "avatars",
+    });
+
+    const user = await User.findById(req.user.id);
+    user.avatar = {
+        public_id: myCloud.public_id,
+        url: myCloud.secure_url,
+    };
+
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Image Uploaded Successfully",
+    });
+});

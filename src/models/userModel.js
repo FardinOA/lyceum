@@ -30,7 +30,12 @@ const userSchema = new Schema(
             required: true,
         },
         avatar: {
-            type: String,
+            public_id: {
+                type: String,
+            },
+            url: {
+                type: String,
+            },
         },
         isVerified: {
             type: Boolean,
