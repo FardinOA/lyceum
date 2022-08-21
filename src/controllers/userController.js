@@ -424,6 +424,7 @@ exports.createComment = catchAssyncErrors(async (req, res, next) => {
     res.status(201).json({
         success: true,
         message: "Comment successfully",
+        comment,
     });
 });
 
