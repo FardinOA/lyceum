@@ -513,11 +513,14 @@ exports.editPost = catchAssyncErrors(async (req, res, next) => {
 });
 
 exports.getPost = catchAssyncErrors(async (req, res, next) => {
-    const post = await Post.findById(req.params.postId).populate("comments");
+    const post = await Post.findById(req.params.postId)
+        .populate("postedBy")
+        .populate("comments");
 
     if (!post) {
         return next(new ErrorHandeler("Can't find post", 404));
     }
+
     res.status(200).json({
         success: true,
         post,
