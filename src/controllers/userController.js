@@ -8,6 +8,8 @@ const createHttpError = require("http-errors");
 const crypto = require("crypto");
 const ErrorHandeler = require("../../utils/errorHandeler");
 const catchAssyncErrors = require("../../middlewares/catchAssyncErrors");
+const Notification = require("../models/notificationModel");
+
 const cloudinary = require("cloudinary").v2;
 
 exports.registerUser = catchAssyncErrors(async (req, res, next) => {
@@ -420,6 +422,14 @@ exports.createComment = catchAssyncErrors(async (req, res, next) => {
     if (!success) {
         return next(new ErrorHandeler("Can't create comment", 400));
     }
+    const post = await Post.findById(req.params.postId);
+
+    const notification = await Notification.create({
+        ownar: post.postedBy,
+        post: req.params.postId,
+        notificationBy: req.user.id,
+        message: `${req.user.firstName} comment on your post`,
+    });
 
     res.status(201).json({
         success: true,
@@ -566,5 +576,24 @@ exports.uploadProfileimage = catchAssyncErrors(async (req, res, next) => {
     res.status(200).json({
         success: true,
         message: "Image Uploaded Successfully",
+    });
+});
+
+exports.getAllNotification = catchAssyncErrors(async (req, res, next) => {
+    const notificationCnt = await Notification.find({
+        ownar: req.query.userId,
+    });
+    const notification = await Notification.find({
+        ownar: req.query.userId,
+    })
+        .skip(req.query.skip)
+        .limit(10)
+        .sort({
+            createdAt: -1,
+        });
+
+    res.status(200).json({
+        notification,
+        cnt: notificationCnt.length,
     });
 });

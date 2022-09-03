@@ -91,9 +91,13 @@ userSchema.methods.comparePassword = async function (pass) {
 };
 
 userSchema.methods.getJWTToken = async function () {
-    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE,
-    });
+    return jwt.sign(
+        { id: this._id, name: this.firstName },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: process.env.JWT_EXPIRE,
+        }
+    );
 };
 
 userSchema.methods.getResetPasswordToken = function () {

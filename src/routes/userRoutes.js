@@ -25,6 +25,7 @@ const {
     likeAPost,
     getAllPost,
     uploadProfileimage,
+    getAllNotification,
 } = require("../controllers/userController");
 
 const validator = require("../../middlewares/validator");
@@ -68,5 +69,8 @@ router.get("/get-post/:postId", getPost);
 router.put("/like-post/:postId", isAuth, likeAPost);
 router.get("/get-all-post", isAuth, getAllPost);
 router.post("/edit-profile-image", isAuth, uploadProfileimage);
+
+// notification
+router.get("/all-notification", getAllNotification);
 
 module.exports = router;
