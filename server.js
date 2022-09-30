@@ -13,31 +13,31 @@ process.on("uncaughtException", (err) => {
 //connect database
 const url = process.env.MONGO_URL;
 
-mongoose
-    .connect(url, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then((data) => {
-        console.log(`Mongo db connected with server ${data.connection.host}`);
-    });
-
 // mongoose
-//     .connect(
-//         `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.8a7eo.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
-//         {
-//             useNewUrlParser: true,
-//             useUnifiedTopology: true,
-//         }
-//     )
-//     .then(() => {
-//         app.listen(8080, () => {
-//             console.log("Database connected");
-//         });
+//     .connect(url, {
+//         useNewUrlParser: true,
+//         useUnifiedTopology: true,
 //     })
-//     .catch((err) => {
-//         console.log(err);
+//     .then((data) => {
+//         console.log(`Mongo db connected with server ${data.connection.host}`);
 //     });
+
+mongoose
+    .connect(
+        `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.8a7eo.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
+        {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        }
+    )
+    .then(() => {
+        app.listen(8080, () => {
+            console.log("Database connected");
+        });
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
