@@ -36,7 +36,10 @@ app.use(bodyParser.json({ limit: "50mb" }));
 
 const userRouter = require("./src/routes/userRoutes");
 
-app.use("/api/v1", userRouter);
+const conversationRouter = require("./src/routes/conversation");
+const messageRouter = require("./src/routes/message");
+
+app.use("/api/v1", userRouter, conversationRouter, messageRouter);
 app.get("/", (req, res) => {
     res.json({ message: "hello Fardin" });
 });

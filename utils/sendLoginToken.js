@@ -14,7 +14,7 @@ const sendToken = async (user, statusCode, res) => {
     const secureUser = user.toObject();
     delete secureUser.password;
     JSON.stringify(secureUser);
-    res.status(statusCode).cookie("token", token, options).json({
+    res.status(statusCode).cookie("cookieToken", token, options).json({
         success: true,
         user: secureUser,
         token,

@@ -26,6 +26,7 @@ const {
     getAllPost,
     uploadProfileimage,
     getAllNotification,
+    getUserID,
 } = require("../controllers/userController");
 
 const validator = require("../../middlewares/validator");
@@ -56,6 +57,7 @@ router.post("/follow/:id", isAuth, followUser);
 router.get("/follower", isAuth, getAllFolowers);
 router.get("/following", isAuth, getAllFolowing);
 router.post("/unfollow/:id", isAuth, unFollowUser);
+router.get("/userId", isAuth, getUserID);
 
 // route for post
 

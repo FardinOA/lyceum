@@ -599,3 +599,21 @@ exports.getAllNotification = catchAssyncErrors(async (req, res, next) => {
         cnt: notificationCnt.length,
     });
 });
+
+exports.getUserID = catchAssyncErrors(async (req, res, next) => {
+    if (!req.user?.id)
+        return next(new ErrorHandeler("Please log in first", 403));
+    res.status(200).json({
+        id: req.user.id,
+    });
+});
+
+// exports.getConversation = catchAssyncErrors(async (req, res, next) => {
+//     if (!req.user?.id)
+//         return next(new ErrorHandeler("Please log in first", 403));
+
+//     const conversations = await Conversation.findById(req.user.id);
+//     res.status(200).json({
+//         conversations,
+//     });
+// });
