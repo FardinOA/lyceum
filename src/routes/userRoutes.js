@@ -27,6 +27,7 @@ const {
     uploadProfileimage,
     getAllNotification,
     getUserID,
+    getUsers,
 } = require("../controllers/userController");
 
 const validator = require("../../middlewares/validator");
@@ -52,6 +53,7 @@ router.put(
 
 router.get("/user", isAuth, getUserInfo);
 router.get("/user/:id", getUser);
+router.post("/users", isAuth, getUsers);
 
 router.post("/follow/:id", isAuth, followUser);
 router.get("/follower", isAuth, getAllFolowers);

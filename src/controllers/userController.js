@@ -100,7 +100,7 @@ exports.logout = catchAssyncErrors(async (req, res, next) => {
 });
 
 exports.updatePassword = catchAssyncErrors(async (req, res, next) => {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
 
     const isPassMatch = await user.comparePassword(req.body.currentPassword);
     if (!isPassMatch) {
@@ -184,7 +184,7 @@ exports.getUserInfo = catchAssyncErrors(async (req, res, next) => {
     if (!req.user?.id)
         return next(new ErrorHandeler("Please log in first", 403));
 
-    const user = await User.findById(req.user.id).populate("allPosts");
+    const user = await User.findById(req.user._id).populate("allPosts");
 
     const secureUser = user.toObject();
     delete secureUser.password;
@@ -238,6 +238,40 @@ exports.getUser = catchAssyncErrors(async (req, res, next) => {
     });
 });
 
+exports.getUsers = catchAssyncErrors(async (req, res, next) => {
+    const user = req.body.allActive;
+    const userId = user.filter((id) => id != req.user._id);
+
+    const ck = [
+        ...new Set([
+            ...req.body.user.follower,
+            ...req.body.user.following,
+            ...userId,
+        ]),
+    ];
+
+    let final = [];
+
+    for (let i = 0; i < ck.length; i++) {
+        for (let j = 0; j < userId.length; j++) {
+            if (userId[j] == ck[i]) final.push(userId[j]);
+        }
+    }
+
+    const users = await User.findById(final);
+
+    if (!users) return next(new ErrorHandeler("Please log in first", 403));
+    let activeUsers = [];
+
+    if (Array.isArray(users)) activeUsers = [...users];
+    else activeUsers.push(users);
+
+    res.status(200).json({
+        success: true,
+        activeUsers,
+    });
+});
+
 // exports.createPost = catchAssyncErrors(async (req, res, next) => {
 //     const post = await Post.create({ ...req.body });
 //     const user = await User.findByIdAndUpdate({});
@@ -267,7 +301,7 @@ exports.followUser = catchAssyncErrors(async (req, res, next) => {
 
     // logic for me follow to others
     const success = await User.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user._id },
         {
             $addToSet: { following: user._id },
         },
@@ -282,7 +316,7 @@ exports.followUser = catchAssyncErrors(async (req, res, next) => {
     const success2 = await User.findByIdAndUpdate(
         { _id: req.params.id },
         {
-            $addToSet: { follower: req.user.id },
+            $addToSet: { follower: req.user._id },
         },
         {
             multi: true,
@@ -303,7 +337,7 @@ exports.followUser = catchAssyncErrors(async (req, res, next) => {
 });
 
 exports.getAllFolowers = catchAssyncErrors(async (req, res, next) => {
-    const user = await User.findById(req.user.id).populate("follower");
+    const user = await User.findById(req.user._id).populate("follower");
 
     res.status(200).json({
         success: true,
@@ -312,7 +346,7 @@ exports.getAllFolowers = catchAssyncErrors(async (req, res, next) => {
 });
 
 exports.getAllFolowing = catchAssyncErrors(async (req, res, next) => {
-    const user = await User.findById(req.user.id).populate("following");
+    const user = await User.findById(req.user._id).populate("following");
 
     res.status(200).json({
         success: true,
@@ -323,7 +357,7 @@ exports.getAllFolowing = catchAssyncErrors(async (req, res, next) => {
 exports.unFollowUser = catchAssyncErrors(async (req, res, next) => {
     const success = await User.findByIdAndUpdate(
         {
-            _id: req.user.id,
+            _id: req.user._id,
         },
         {
             $pull: { following: req.params.id },
@@ -341,7 +375,7 @@ exports.unFollowUser = catchAssyncErrors(async (req, res, next) => {
             _id: req.params.id,
         },
         {
-            $pull: { follower: req.user.id },
+            $pull: { follower: req.user._id },
         },
         {
             multi: true,
@@ -366,7 +400,7 @@ exports.createPost = catchAssyncErrors(async (req, res, next) => {
     });
     const post = await Post.create({
         ...req.body,
-        postedBy: req.user.id,
+        postedBy: req.user._id,
         image: {
             public_id: myCloud.public_id,
             url: myCloud.secure_url,
@@ -378,7 +412,7 @@ exports.createPost = catchAssyncErrors(async (req, res, next) => {
     }
 
     const savePost = await User.updateOne(
-        { _id: req.user.id },
+        { _id: req.user._id },
         {
             $push: { allPosts: post._id },
         },
@@ -402,7 +436,7 @@ exports.createPost = catchAssyncErrors(async (req, res, next) => {
 exports.createComment = catchAssyncErrors(async (req, res, next) => {
     const comment = await Comment.create({
         ...req.body,
-        commentBy: req.user.id,
+        commentBy: req.user._id,
     });
 
     if (!comment) {
@@ -429,7 +463,7 @@ exports.createComment = catchAssyncErrors(async (req, res, next) => {
     const notification = await Notification.create({
         ownar: post.postedBy,
         post: req.params.postId,
-        notificationBy: req.user.id,
+        notificationBy: req.user._id,
         message: `${req.user.firstName} comment on your post`,
     });
 
@@ -445,7 +479,7 @@ exports.deleteComment = catchAssyncErrors(async (req, res, next) => {
 
     const deleteFromCommentSchema = await Comment.findOneAndDelete({
         _id: commentId,
-        commentBy: req.user.id,
+        commentBy: req.user._id,
     });
     if (!deleteFromCommentSchema)
         return next(new ErrorHandeler("Can't delete comment", 400));
@@ -543,7 +577,7 @@ exports.likeAPost = catchAssyncErrors(async (req, res, next) => {
     const success = await Post.findByIdAndUpdate(
         { _id: req.params.postId },
         {
-            $addToSet: { likes: req.user.id },
+            $addToSet: { likes: req.user._id },
         },
         {
             multi: true,
@@ -567,7 +601,7 @@ exports.uploadProfileimage = catchAssyncErrors(async (req, res, next) => {
         folder: "avatars",
     });
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     user.avatar = {
         public_id: myCloud.public_id,
         url: myCloud.secure_url,
@@ -604,7 +638,7 @@ exports.getUserID = catchAssyncErrors(async (req, res, next) => {
     if (!req.user?.id)
         return next(new ErrorHandeler("Please log in first", 403));
     res.status(200).json({
-        id: req.user.id,
+        id: req.user._id,
     });
 });
 
@@ -612,7 +646,7 @@ exports.getUserID = catchAssyncErrors(async (req, res, next) => {
 //     if (!req.user?.id)
 //         return next(new ErrorHandeler("Please log in first", 403));
 
-//     const conversations = await Conversation.findById(req.user.id);
+//     const conversations = await Conversation.findById(req.user._id);
 //     res.status(200).json({
 //         conversations,
 //     });
