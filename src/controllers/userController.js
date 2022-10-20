@@ -199,6 +199,7 @@ exports.getUserInfo = catchAssyncErrors(async (req, res, next) => {
 exports.getAllPostByUser = catchAssyncErrors(async (req, res, next) => {
     const cntPost = await Post.find();
     const posts = await Post.find({ postedBy: req.query.userId })
+        .populate("postedBy")
         .skip(req.query.skip)
         .limit(10)
         .sort({ createdAt: -1 });
