@@ -6,7 +6,7 @@ const register = Joi.object({
     userName: Joi.string().alphanum().min(3).max(20),
     email: Joi.string().email().required(),
     phone: Joi.string()
-        .pattern(/^(?:\+?88|0088)?01[15-9]\d{8}$/)
+        .pattern(/(^([+]{1}[8]{2}|0088)?(01){1}[3-9]{1}\d{8})$/)
         .message("This is not a valid phone number")
         .required(),
     password: Joi.string().required().min(5).max(30),
