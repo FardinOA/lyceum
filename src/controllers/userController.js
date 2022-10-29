@@ -342,6 +342,7 @@ exports.getAllFolowers = catchAssyncErrors(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
+        following: user.following,
         follower: user.follower,
     });
 });
