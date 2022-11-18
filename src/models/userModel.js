@@ -12,9 +12,7 @@ const userSchema = new Schema(
         lastName: {
             type: String,
         },
-        username: {
-            type: String,
-        },
+
         email: {
             type: String,
             unique: true,
@@ -72,6 +70,11 @@ const userSchema = new Schema(
                 ref: "User",
             },
         ],
+        role: {
+            type: String,
+            enum: ["user", "admin"],
+            default: "user",
+        },
         resetPasswordToken: String,
         resetPasswordExpire: Date,
     },
@@ -82,6 +85,7 @@ userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         next();
     }
+
     this.password = await bcryptjs.hash(this.password, 10);
 });
 

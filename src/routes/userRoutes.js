@@ -28,10 +28,16 @@ const {
     getAllNotification,
     getUserID,
     getUsers,
+    updateUserInfo,
+    getAllUsers,
+    banUser,
+    UnBanUser,
+    deleteUser,
+    unDeleteUser,
 } = require("../controllers/userController");
 
 const validator = require("../../middlewares/validator");
-const { isAuth } = require("../../middlewares/auth");
+const { isAuth, authRole } = require("../../middlewares/auth");
 
 router.post("/register", validator("register"), registerUser);
 router.post("/confirm-otp", confirmOTP);
@@ -50,16 +56,21 @@ router.put(
     validator("resetPasswordValidator"),
     resetPassword
 );
+router.put("/updateUserInfo", isAuth, updateUserInfo);
 
 router.get("/user", isAuth, getUserInfo);
 router.get("/user/:id", getUser);
-router.post("/users", isAuth, getUsers);
+router.post("/users", getUsers);
 
 router.post("/follow/:id", isAuth, followUser);
 router.get("/follower", isAuth, getAllFolowers);
 router.get("/following", isAuth, getAllFolowing);
 router.post("/unfollow/:id", isAuth, unFollowUser);
 router.get("/userId", isAuth, getUserID);
+router.put("/banUser/:id", isAuth, authRole("admin"), banUser);
+router.put("/UnBanUser/:id", isAuth, authRole("admin"), UnBanUser);
+router.put("/deleteUser/:id", isAuth, authRole("admin"), deleteUser);
+router.put("/unDeleteUser/:id", isAuth, authRole("admin"), unDeleteUser);
 
 // route for post
 
@@ -69,6 +80,7 @@ router.put("/delete-comment", isAuth, deleteComment);
 router.put("/edit-comment/:commentId", isAuth, editComment);
 router.put("/edit-post/:postId", isAuth, editPost);
 router.get("/get-all-post-byUser", getAllPostByUser);
+router.get("/get-all-users", isAuth, authRole("admin"), getAllUsers);
 router.get("/get-post/:postId", getPost);
 router.put("/like-post/:postId", isAuth, likeAPost);
 router.get("/get-all-post", isAuth, getAllPost);

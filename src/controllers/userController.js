@@ -6,6 +6,7 @@ const Comment = require("../models/commentModel");
 const sendToken = require("../../utils/sendLoginToken");
 const createHttpError = require("http-errors");
 const crypto = require("crypto");
+const bcryptjs = require("bcryptjs");
 const ErrorHandeler = require("../../utils/errorHandeler");
 const catchAssyncErrors = require("../../middlewares/catchAssyncErrors");
 const Notification = require("../models/notificationModel");
@@ -62,17 +63,28 @@ exports.confirmOTP = catchAssyncErrors(async (req, res, next) => {
 });
 
 exports.login = catchAssyncErrors(async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, admin } = req.body;
     if (!email || !password) {
         return next(new ErrorHandeler("Please Enter Email & Password", 400));
     }
-
-    const user = await User.findOne({
-        email,
-        isVerified: true,
-        isDeleted: false,
-        banned: false,
-    });
+    let user;
+    if (admin) {
+        user = await User.findOne({
+            email,
+            isVerified: true,
+            isDeleted: false,
+            banned: false,
+            role: "admin",
+        });
+    } else {
+        user = await User.findOne({
+            email,
+            isVerified: true,
+            isDeleted: false,
+            banned: false,
+            role: "user",
+        });
+    }
 
     if (!user) {
         return next(new ErrorHandeler("Invalid Email or Password", 400));
@@ -125,9 +137,11 @@ exports.forgotPassword = catchAssyncErrors(async (req, res, next) => {
     }
     const resetToken = user.getResetPasswordToken();
     user.save({ validateBeforeSave: true });
-    const resetPasswordUrl = `${req.protocol}://${req.get(
-        "host"
-    )}/password/reset/${resetToken}`;
+    // const resetPasswordUrl = `${req.protocol}://${req.get(
+    //     "host"
+    // )}/password/reset/${resetToken}`;
+
+    const resetPasswordUrl = `http://localhost:3000/password/reset/${resetToken}`;
 
     const message = `your password reset token is :- \n\n ${resetPasswordUrl} \n\nif you have not requested this email then, Please ignore it`;
     try {
@@ -180,11 +194,146 @@ exports.resetPassword = catchAssyncErrors(async (req, res, next) => {
     res.status(201).json({ message: "Reset Password Successful" });
 });
 
+exports.updateUserInfo = catchAssyncErrors(async (req, res, next) => {
+    const { firstName, lastName, email, phone } = req.body;
+    if (!firstName && !lastName && !email && !phone) {
+        return next(new ErrorHandeler("Please give some information", 400));
+    }
+
+    let newObj;
+
+    newObj = {
+        ...req.body,
+    };
+
+    const user = await User.findByIdAndUpdate(
+        { _id: req.user._id },
+        {
+            $set: newObj,
+        },
+        {
+            multi: true,
+        }
+    );
+    res.status(200).json({ message: "User updated successfully" });
+});
+
+exports.banUser = catchAssyncErrors(async (req, res, next) => {
+    const _id = req.params.id;
+
+    const newObj = {
+        banned: true,
+    };
+
+    const is = await User.findByIdAndUpdate(
+        { _id },
+        {
+            $set: newObj,
+        },
+        {
+            multi: true,
+        }
+    );
+
+    if (!is) return next(new ErrorHandeler("Something Went Wrong", 500));
+    const user = await User.findOne({ _id });
+    res.status(200).json({
+        user,
+        message: `${user.lastName}'s Account is Banned successfully`,
+    });
+});
+
+exports.UnBanUser = catchAssyncErrors(async (req, res, next) => {
+    const _id = req.params.id;
+
+    const newObj = {
+        banned: false,
+    };
+
+    const is = await User.findByIdAndUpdate(
+        { _id },
+        {
+            $set: newObj,
+        },
+        {
+            multi: true,
+        }
+    );
+
+    if (!is) return next(new ErrorHandeler("Something Went Wrong", 500));
+    const user = await User.findOne({ _id });
+    res.status(200).json({
+        user,
+        message: `${user.lastName}'s Account is Un-Banned successfully`,
+    });
+});
+
+// delete user
+exports.deleteUser = catchAssyncErrors(async (req, res, next) => {
+    const _id = req.params.id;
+
+    const newObj = {
+        isDeleted: true,
+    };
+
+    const is = await User.findByIdAndUpdate(
+        { _id },
+        {
+            $set: newObj,
+        },
+        {
+            multi: true,
+        }
+    );
+
+    if (!is) return next(new ErrorHandeler("Something Went Wrong", 500));
+    const user = await User.findOne({ _id });
+    res.status(200).json({
+        user,
+        message: `${user.lastName}'s Account Is Deleted`,
+    });
+});
+
+exports.unDeleteUser = catchAssyncErrors(async (req, res, next) => {
+    const _id = req.params.id;
+
+    const newObj = {
+        isDeleted: false,
+    };
+
+    const is = await User.findByIdAndUpdate(
+        { _id },
+        {
+            $set: newObj,
+        },
+        {
+            multi: true,
+        }
+    );
+
+    if (!is) return next(new ErrorHandeler("Something Went Wrong", 500));
+    const user = await User.findOne({ _id });
+    res.status(200).json({
+        user,
+        message: `${user.lastName}'s Account Is Revived`,
+    });
+});
+
 exports.getUserInfo = catchAssyncErrors(async (req, res, next) => {
     if (!req.user?.id)
         return next(new ErrorHandeler("Please log in first", 403));
 
-    const user = await User.findById(req.user._id).populate("allPosts");
+    const user = await User.findOne({
+        _id: req.user._id,
+        isVerified: true,
+        isDeleted: false,
+        banned: false,
+    }).populate("allPosts");
+
+    if (!user)
+        return next(
+            new ErrorHandeler("Your account is Banned or Deleted", 403)
+        );
 
     const secureUser = user.toObject();
     delete secureUser.password;
@@ -207,6 +356,19 @@ exports.getAllPostByUser = catchAssyncErrors(async (req, res, next) => {
     res.status(200).json({
         posts,
         cnt: cntPost.length,
+    });
+});
+
+exports.getAllUsers = catchAssyncErrors(async (req, res, next) => {
+    const cntUser = await User.find();
+    const users = await User.find({ role: "user" })
+        .skip(req.query.skip)
+        .limit(20)
+        .sort({ createdAt: -1 });
+
+    res.status(200).json({
+        users,
+        cnt: cntUser.length,
     });
 });
 
@@ -240,36 +402,38 @@ exports.getUser = catchAssyncErrors(async (req, res, next) => {
 });
 
 exports.getUsers = catchAssyncErrors(async (req, res, next) => {
-    const user = req.body.allActive;
-    const userId = user.filter((id) => id != req.user._id);
+    // const user = req.body.ids;
+    // const userId = user?.filter((id) => id != req.user.id);
+    // if (user.length < 1) res.status(200).json({ message: "no active user" });
+    // const ck = [
+    //     ...new Set([
+    //         ...req.body.user.follower,
+    //         ...req.body.user.following,
+    //         ...userId,
+    //     ]),
+    // ];
 
-    const ck = [
-        ...new Set([
-            ...req.body.user.follower,
-            ...req.body.user.following,
-            ...userId,
-        ]),
-    ];
+    // let final = [];
 
-    let final = [];
+    // for (let i = 0; i < ck.length; i++) {
+    //     for (let j = 0; j < userId.length; j++) {
+    //         if (userId[j] == ck[i]) final.push(userId[j]);
+    //     }
+    // }
 
-    for (let i = 0; i < ck.length; i++) {
-        for (let j = 0; j < userId.length; j++) {
-            if (userId[j] == ck[i]) final.push(userId[j]);
-        }
-    }
+    // const users = await User.find({ _id: final });
 
-    const users = await User.findById(final);
+    // if (!users) return next(new ErrorHandeler("Please log in first", 403));
+    // let activeUsers = [];
 
-    if (!users) return next(new ErrorHandeler("Please log in first", 403));
-    let activeUsers = [];
+    // if (Array.isArray(users)) activeUsers = [...users];
+    // else activeUsers.push(users);
 
-    if (Array.isArray(users)) activeUsers = [...users];
-    else activeUsers.push(users);
+    const activeUsers = await User.find({ _id: req.body.ids, role: "user" });
 
     res.status(200).json({
         success: true,
-        activeUsers,
+        data: activeUsers,
     });
 });
 
