@@ -10,17 +10,7 @@ process.on("uncaughtException", (err) => {
     process.exit(1);
 });
 
-//connect database
 const url = process.env.MONGO_URL;
-
-// mongoose
-//     .connect(url, {
-//         useNewUrlParser: true,
-//         useUnifiedTopology: true,
-//     })
-//     .then((data) => {
-//         console.log(`Mongo db connected with server ${data.connection.host}`);
-//     });
 
 mongoose
     .connect(
