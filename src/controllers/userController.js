@@ -430,7 +430,7 @@ exports.getUsers = catchAssyncErrors(async (req, res, next) => {
     // if (Array.isArray(users)) activeUsers = [...users];
     // else activeUsers.push(users);
 
-    const activeUsers = await User.find({ _id: req.body.ids, role: "user" });
+    const activeUsers = await User.find({ _id: req.body.arr });
 
     res.status(200).json({
         success: true,
