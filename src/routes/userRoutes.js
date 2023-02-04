@@ -42,7 +42,7 @@ const { isAuth, authRole } = require("../../middlewares/auth");
 router.post("/register", validator("register"), registerUser);
 router.post("/confirm-otp", confirmOTP);
 router.post("/login", validator("login"), login);
-router.get("/logout", logout);
+router.post("/logout", logout);
 router.post(
     "/updatePassword",
     isAuth,
