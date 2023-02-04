@@ -103,11 +103,12 @@ exports.logout = catchAssyncErrors(async (req, res, next) => {
     res.cookie("cookieToken", null, {
         expires: new Date(Date.now()),
         httpOnly: true,
-        sameSite: "None",
+        sameSite: "strict",
         secure: true,
     });
+
     res.clearCookie("cookieToken");
-    console.log(req.cookie);
+
     res.send({
         success: true,
         message: "User logged out",

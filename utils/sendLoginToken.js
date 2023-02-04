@@ -8,7 +8,7 @@ const sendToken = async (user, statusCode, res) => {
             Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000
         ),
         httpOnly: true,
-        sameSite: "None",
+        sameSite: "strict",
         secure: true,
     };
     const secureUser = user.toObject();
